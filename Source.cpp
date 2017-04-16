@@ -5,16 +5,16 @@
 
 using namespace std;
 
-float scale = 1;
+float scale = 1,scalefactor = 0.2;    //scalefactor to generate different speeds for different asteroids
 float cx = 0, cy = 0, r = 1, z = 10;
 
 
-//TODO : Random number of asteroids, random timing, shooting controls, aim etc. Try different speeds for different asteroids
+//TODO : Random number of asteroids, random timing, shooting controls, aim etc. (done: Try different speeds for different asteroids)
 // Still remain smooth
 
 void idle() {
 	this_thread::sleep_for(chrono::milliseconds(50));
-	scale += 0.2;
+	scale += scalefactor;   //0.2;
 	z--;
 	glutPostRedisplay();
 }
@@ -42,6 +42,7 @@ void display() {
 		r = 1;
 		z = 10;
 		scale = 1;
+		scalefactor = (rand()%5+1)/10.0;    //scalefactor to generate different speeds for different asteroids
 		//this_thread::sleep_for(chrono::milliseconds(rand()%5000)); // Figure out how to add delay without causing lag in controls
 		cx = (rand() % 20) - 10;
 		cy = (rand() % 20) - 10;
@@ -51,16 +52,27 @@ void display() {
 	glFlush();
 }
 
+//Controls: functionality for normal keys like a,w,s,d
 void keyboard(unsigned char ch, int x, int y) {
-	//Controls - Find out for direction keys
 	//Figure out how to avoid the lag with key press and hold
 	 switch(ch) {
-	 case'a':cx += 1; break;
-	 case 'd': cx -= 1; break;
-	 case 'w': cy += 1; break;
-	 case 's': cy -= 1; break;
+		 case 'a': cx += 1; break;
+		 case 'd': cx -= 1; break;
+		 case 'w': cy -= 1; break;
+		 case 's': cy += 1; break;
 	}
 	 glutPostRedisplay();
+}
+
+//Controls: functionality for special function keys(direction keys) like up, down, left, right arrows
+void arrowKeyPress(int key, int x, int y){
+	switch(key){
+		case GLUT_KEY_LEFT: cx += 1; break;
+		case GLUT_KEY_RIGHT: cx -= 1; break;
+		case GLUT_KEY_UP: cy -= 1; break;
+		case GLUT_KEY_DOWN: cy += 1; break;
+	}
+	glutPostRedisplay();
 }
 
 void init() {
@@ -78,5 +90,6 @@ int main(int argc, char *argv[]) {
 	init();
 	glutDisplayFunc(display);
 	glutKeyboardFunc(keyboard);
+	glutSpecialFunc(arrowKeyPress);
 	glutMainLoop();
 }
