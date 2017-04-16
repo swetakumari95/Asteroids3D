@@ -8,7 +8,6 @@ using namespace std;
 float scale = 1,scalefactor = 0.2;    //scalefactor to generate different speeds for different asteroids
 float cx = 0, cy = 0, r = 1, z = 10;
 
-
 //TODO : Random number of asteroids, random timing, shooting controls, aim etc. (done: Try different speeds for different asteroids)
 // Still remain smooth
 
@@ -22,6 +21,19 @@ void idle() {
 void display() {
 	glClearColor(0, 0, 0, 1);
 	glClear(GL_COLOR_BUFFER_BIT);
+	
+	//Space background
+	float xpos,ypos,numStars=50;
+	while (numStars--){
+		xpos = (rand() % 20) - 10;
+		ypos = (rand() % 20) - 10;
+		glColor3f(1,1,1);
+		glBegin(GL_POINTS);
+			glVertex3f(xpos,ypos,-10);
+		glEnd();
+	}
+
+	//Displaying the circle
 	glColor3f(1, 1, 1);
 	glPointSize(5);
 	for (float i = 0; i < 180; i += 0.01) {
