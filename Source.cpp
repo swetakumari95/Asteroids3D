@@ -6,16 +6,30 @@
 using namespace std;
 
 float scale = 1, scalefactor = 0.2;    //scalefactor to generate different speeds for different asteroids
-float cx = 0, cy = 0, r = 1, z = 10;
+float cx = 0, cy = 0, r = 1, z = -10;
+int flag = 0;
 
 //TODO : Random number of asteroids, random timing, shooting controls, aim etc. (done: Try different speeds for different asteroids)
 // Still remain smooth
 
-void idle() {
+/*void idle() {
 	this_thread::sleep_for(chrono::milliseconds(50));
 	scale += scalefactor;   //0.2;
 	z--;
 	glutPostRedisplay();
+}*/
+
+int delay = 100;
+
+void timer(int val){
+	if(scale < 4)
+		scale += scalefactor;
+	else
+		scale += 0.25;
+	z--;
+	glutPostRedisplay();
+	if(z > -10)
+		glutTimerFunc(delay,timer,100);
 }
 
 void display() {
@@ -42,26 +56,32 @@ void display() {
 		float x2 = cx + scale*r*cos((360 - i)*3.14);
 		float y2 = cy + scale*r*sin((360 - i)*3.14);
 		glBegin(GL_LINES);
-		glColor3f(1, 1, 1);
-		glVertex3f(x1, y1, z);
-		glVertex3f(x2, y2, z);
 		glColor3f(1, 0, 0);
 		glVertex3f(x1, y1, z);
 		glVertex3f(x2, y2, z);
 		glEnd();
 	}
-	if (scale > 5) {
+	if (z <= -10) {
+		if(cx < 10 && cx > -10 && cy < 10 && cy > -10 && flag){
+			glClear(GL_COLOR_BUFFER_BIT);
+			glClearColor(1,1,1,1);
+			
+		}
+		else{
+		flag = 1;
 		r = 1;
 		z = 10;
 		scale = 1;
 		scalefactor = (rand() % 5 + 1) / 10.0;    //scalefactor to generate different speeds for different asteroids
-												  //this_thread::sleep_for(chrono::milliseconds(rand()%5000)); // Figure out how to add delay without causing lag in controls
+		//this_thread::sleep_for(chrono::milliseconds(rand()%5000)); // Figure out how to add delay without causing lag in controls
+		if(scalefactor < 0.2)
+			scalefactor *= 1.5;
 		cx = (rand() % 20) - 10;
 		cy = (rand() % 20) - 10;
+		glutTimerFunc(delay,timer,100);
+		}
 	}
-	else
-		glutIdleFunc(idle);
-
+	
 	//Aim square
 	glBegin(GL_LINE_LOOP);
 	glColor3f(1, 1, 1);
@@ -82,6 +102,23 @@ void keyboard(unsigned char ch, int x, int y) {
 	case 'd': cx -= 1; break;
 	case 'w': cy -= 1; break;
 	case 's': cy += 1; break;
+	case 32:
+	glLineWidth(10);    //doesn't work
+	glBegin(GL_LINES);
+	glColor3f(0,1,0);
+	glVertex3f(-10,-10,0);
+	glVertex3f(0,0,0);
+	glVertex3f(10,-10,0);
+	glVertex3f(0,0,0);
+	glEnd();
+	glFlush();
+	glLineWidth(1);
+	
+	if(0 < (cx + (scale *r)) && 0 > (cx - (scale*r)) && 0 < (cy + (scale *r)) && 0 > (cy - (scale*r)) ){
+		cx = 1000;
+		cy = 1000;
+	
+	}
 	}
 	glutPostRedisplay();
 }
