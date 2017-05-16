@@ -4,6 +4,7 @@
 #include <ctime>
 #include <thread>
 #include <GL/glut.h>
+#include <string>
 
 using namespace std;
 
@@ -38,7 +39,7 @@ void idle(){
 	if(difftime(now,clk) > 5){
 		score += 10;
 		clk = now;
-		cout<<score<<endl;
+		//cout<<score<<endl;
 	}
 }
 
@@ -51,6 +52,13 @@ void timer(int val){
 	glutPostRedisplay();
 	if(z > -10)
 		glutTimerFunc(delay,timer,100);
+}
+
+void drawBitmapText(string str,float x, float y, float z){
+	glRasterPos3f(x,y,z);
+	for (int i=0;i<str.length();i++){
+		glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18,str[i]);
+	}
 }
 
 void display() {
@@ -115,6 +123,69 @@ void display() {
 		glVertex3f(0, 1, 0);
 		glVertex3f(0, -1, 0);
 	glEnd();
+	
+	//spacecraft interiors
+	glColor3f(0.1,0.1,0.1);
+	glBegin(GL_POLYGON);
+		glVertex3f(-10,-10,10);
+		glVertex3f(-10,-8,10);
+		glVertex3f(10,-8,10);
+		glVertex3f(10,-10,10);
+	glEnd();
+	//box for displaying the score
+	glColor3f(0,0,0);
+	glBegin(GL_POLYGON);
+		glVertex3f(-2,-9.5,10);
+		glVertex3f(-2,-8.5,10);
+		glVertex3f(2,-8.5,10);
+		glVertex3f(2,-9.5,10);
+	glEnd();
+	//outline of the box
+	glColor3ub( rand()%255, rand()%255, rand()%255 );
+	glBegin(GL_LINE_LOOP);
+		glVertex3f(-2,-9.5,10);
+		glVertex3f(-2,-8.5,10);
+		glVertex3f(2,-8.5,10);
+		glVertex3f(2,-9.5,10);
+	glEnd();
+	//displaying the score
+	glColor3ub( rand()%255, rand()%255, rand()%255 );
+	string str = "SCORE : "+to_string(score);
+	drawBitmapText(str,-1.9,-9.25,10);
+	drawBitmapText(" ",-1.9,-9.25,10);
+	//random panels on the display screen
+	for (float i=-9.5;i<-2.4;i+=0.8){
+		glColor3ub( rand()%255, rand()%255, rand()%255 );
+		glBegin(GL_QUADS);
+			glVertex3f(i,-9.8,10);
+			glVertex3f(i,-9.4,10);
+			glVertex3f(i+0.4,-9.4,10);
+			glVertex3f(i+0.4,-9.8,10);
+		glEnd();
+		glColor3ub( rand()%255, rand()%255, rand()%255 );
+		glBegin(GL_QUADS);
+			glVertex3f(i,-9,10);
+			glVertex3f(i,-8.6,10);
+			glVertex3f(i+0.4,-8.6,10);
+			glVertex3f(i+0.4,-9,10);
+		glEnd();
+	}
+	for (float i=2.4;i<9.5;i+=0.8){
+		glColor3ub( rand()%255, rand()%255, rand()%255 );
+		glBegin(GL_QUADS);
+			glVertex3f(i,-9.8,10);
+			glVertex3f(i,-9.4,10);
+			glVertex3f(i+0.4,-9.4,10);
+			glVertex3f(i+0.4,-9.8,10);
+		glEnd();
+		glColor3ub( rand()%255, rand()%255, rand()%255 );
+		glBegin(GL_QUADS);
+			glVertex3f(i,-9,10);
+			glVertex3f(i,-8.6,10);
+			glVertex3f(i+0.4,-8.6,10);
+			glVertex3f(i+0.4,-9,10);
+		glEnd();
+	}
 	
 	glFlush();
 }
