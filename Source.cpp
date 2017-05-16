@@ -14,11 +14,12 @@ int flag = 0;
 
 //TODO: Random number of asteroids at the same time, random timing,  etc. 
 //TODO: gameplay should be smooth
-//TODO: game over, opening screen, menus, asteroid texture, panel at the bottom of the screen, healthbar?, enter to pause the game
+//TODO: game over, opening screen, menus, asteroid texture, healthbar?, enter to pause the game
 //TODO: work on laser, prevent continuous key press
 
 //done: Try different speeds for different asteroids, shooting controls, aim
-//aim still takes a square region for hit(make it circle), add special scores for hitting the asteroids
+//done: aim still takes a square region for hit(make it circle), add special scores for hitting the asteroids
+//done: panel at the bottom of the screen
 
 
 /*void idle() {
@@ -77,7 +78,6 @@ void display() {
 	}
 
 	//Displaying the circle
-	glColor3f(1, 1, 1);
 	glPointSize(5);
 	for (float i = 0; i < 180; i += 0.01) {
 		float x1 = cx + scale*r*cos(i*3.14);
@@ -85,7 +85,7 @@ void display() {
 		float x2 = cx + scale*r*cos((360 - i)*3.14);
 		float y2 = cy + scale*r*sin((360 - i)*3.14);
 		glBegin(GL_LINES);
-		glColor3f(1, 0, 0);
+		glColor3f(0.4, 0.1, 0.1);
 		glVertex3f(x1, y1, z);
 		glVertex3f(x2, y2, z);
 		glEnd();
@@ -141,13 +141,30 @@ void display() {
 		glVertex3f(2,-9.5,10);
 	glEnd();
 	//outline of the box
-	glColor3ub( rand()%255, rand()%255, rand()%255 );
-	glBegin(GL_LINE_LOOP);
-		glVertex3f(-2,-9.5,10);
-		glVertex3f(-2,-8.5,10);
-		glVertex3f(2,-8.5,10);
-		glVertex3f(2,-9.5,10);
-	glEnd();
+	for (float i=-9.5;i<=-8.5;i+=0.2){
+		glColor3ub( rand()%255, rand()%255, rand()%255 );
+		glBegin(GL_POINTS);
+			glVertex3f(-2,i,10);
+		glEnd();
+	}
+	for (float i=-2;i<=2;i+=0.2){
+		glColor3ub( rand()%255, rand()%255, rand()%255 );
+		glBegin(GL_POINTS);
+			glVertex3f(i,-8.5,10);
+		glEnd();
+	}
+	for (float i=-9.5;i<=-8.5;i+=0.2){
+		glColor3ub( rand()%255, rand()%255, rand()%255 );
+		glBegin(GL_POINTS);
+			glVertex3f(2,i,10);
+		glEnd();
+	}
+	for (float i=-2;i<=2;i+=0.2){
+		glColor3ub( rand()%255, rand()%255, rand()%255 );
+		glBegin(GL_POINTS);
+			glVertex3f(i,-9.5,10);
+		glEnd();
+	}
 	//displaying the score
 	glColor3ub( rand()%255, rand()%255, rand()%255 );
 	string str = "SCORE : "+to_string(score);
@@ -186,6 +203,53 @@ void display() {
 			glVertex3f(i+0.4,-9,10);
 		glEnd();
 	}
+	//corners for the spacecraft interiors
+	glColor3f(0.1,0.1,0.1);
+	glBegin(GL_TRIANGLES);
+		glVertex3f(-10,-8,10);
+		glVertex3f(-10,-5,10);
+		glVertex3f(-5,-8,10);
+	glEnd();
+	glBegin(GL_TRIANGLES);
+		glVertex3f(10,-8,10);
+		glVertex3f(10,-5,10);
+		glVertex3f(5,-8,10);
+	glEnd();
+	//panels in the corner portion of spacecraft
+	glColor3f(0,0,0);
+	glBegin(GL_TRIANGLES);
+		glVertex3f(-9.8,-8,10);
+		glVertex3f(-9.8,-5.5,10);
+		glVertex3f(-5.5,-8,10);
+	glEnd();
+	glBegin(GL_TRIANGLES);
+		glVertex3f(9.8,-8,10);
+		glVertex3f(9.8,-5.5,10);
+		glVertex3f(5.5,-8,10);
+	glEnd();
+	//varying graph like lines
+	float xx=3.8;
+	for (float y=-7.8;y<-5.5;y+=0.35){
+		glColor3ub( rand()%255, rand()%255, rand()%255 );
+		glBegin(GL_LINES);
+			glVertex3f(-9.75,y,10);
+			glVertex3f(-9.75+xx,y,10);
+		glEnd();
+		if (rand()%3 == 1)
+			break;
+		xx-=0.6;
+	}
+	xx=3.8;
+	for (float y=-7.8;y<-5.5;y+=0.35){
+		glColor3ub( rand()%255, rand()%255, rand()%255 );
+		glBegin(GL_LINES);
+			glVertex3f(9.75,y,10);
+			glVertex3f(9.75-xx,y,10);
+		glEnd();
+		if (rand()%3 == 1)
+			break;
+		xx-=0.6;
+	}
 	
 	glFlush();
 }
@@ -203,22 +267,22 @@ void keyboard(unsigned char ch, int x, int y) {
 		glPointSize(5);   
 		glBegin(GL_LINES);
 			glColor3f(0,1,0);
-			glVertex3f(-10,-10,0);
-			glVertex3f(-8,-8,0);
-			glVertex3f(-7,-7,0);
-			glVertex3f(-5,-5,0);
-			glVertex3f(-4,-4,0);
-			glVertex3f(-2,-2,0);
-			glVertex3f(-1,-1,0);
+			glVertex3f(-10,-5,0);
+			glVertex3f(-8,-4,0);
+			glVertex3f(-7,-3.5,0);
+			glVertex3f(-5,-2.5,0);
+			glVertex3f(-4,-2,0);
+			glVertex3f(-2,-1,0);
+			glVertex3f(-1,-0.5,0);
 			glVertex3f(0,0,0);
 			
-			glVertex3f(10,-10,0);
-			glVertex3f(8,-8,0);
-			glVertex3f(7,-7,0);
-			glVertex3f(5,-5,0);
-			glVertex3f(4,-4,0);
-			glVertex3f(2,-2,0);
-			glVertex3f(1,-1,0);
+			glVertex3f(10,-5,0);
+			glVertex3f(8,-4,0);
+			glVertex3f(7,-3.5,0);
+			glVertex3f(5,-2.5,0);
+			glVertex3f(4,-2,0);
+			glVertex3f(2,-1,0);
+			glVertex3f(1,-0.5,0);
 			glVertex3f(0,0,0);
 		glEnd();
 		glFlush();
