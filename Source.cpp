@@ -55,6 +55,15 @@ void drawBitmapText(string str, float x, float y, float z,float r,float g,float 
 	glColor3f(1, 1, 1);
 }
 
+void drawBitmapTextLarge(string str, float x, float y, float z,float r,float g,float b) {
+	glColor3ub((int)r, (int)g, (int)b);
+	glRasterPos3f(x, y, z);
+	for (int i = 0; i<str.length(); i++) {
+		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, str[i]);
+	}
+	glColor3f(1, 1, 1);
+}
+
 void drawButton(float x, float y, float width, float height, bool selected) {
 	if (selected)
 		glColor3f(1, 0, 0);
@@ -237,10 +246,48 @@ void startScreenTimer(int n) {
 	glutPostRedisplay();
 }
 
+void instructionScreen() {
+	glClearColor(0, 0, 0, 1);
+	glClear(GL_COLOR_BUFFER_BIT);
+	drawBackground();
+
+	string str[] = {"You are in space, and you command a spacecraft.", "Accidentally you were pushed into the asteroid belt.", "Your aim is to shoot or dodge the asteroids.", "Use up(w), down(s), left(a) or right(d) buttons to move your spacecraft.", "Use the spacebar to shoot the asteroids.", "You are awarded extra points for shooting the asteroids.", "The game is over when an asteroid strikes the spacecraft", "Have fun!"};
+
+	drawBitmapText("INSTRUCTIONS", -2, 8, 10, 0, 0, 255);
+	float ypos=6;
+	for (int i=0;i<(sizeof(str)/sizeof(*str));i++){
+		float xpos;
+		int l = str[i].length(); 
+		if (l>60) xpos = -8;
+		else if (l>55) xpos = -7.5;
+		else if (l>50) xpos = -7;
+		else if (l>45) xpos = -6.5;
+		else if (l>40) xpos = -6;
+		else if (l>35) xpos = -5.5;
+		else if (l>30) xpos = -5;
+		else if (l>25) xpos = -4.5;
+		else if (l>20) xpos = -4;
+		else if (l>15) xpos = -3.5;
+		else if (l>10) xpos = -3;
+		else if (l>5)  xpos = -2.5;
+		drawBitmapText(str[i], xpos, ypos, 10, 0, 255, 255);
+		ypos -= 1.5;
+	}
+	
+	drawBitmapText("Press the ESC button to return to main menu.", -5.5, -7, 10, 255, 255, 255);
+	
+	drawSpaceShip();
+	glutTimerFunc(delay, startScreenTimer, 100);
+	glFlush();
+}
+
 void startScreen() {
 	glClearColor(0, 0, 0, 1);
 	glClear(GL_COLOR_BUFFER_BIT);
 	glColor3f(1, 1, 1);
+	
+	drawBitmapTextLarge("ASTEROIDS 3D",-2.8,8,10,255,255,0);
+	
 	float x = -2, y = 6, delta = 2;
 	drawButton(x, y, 3, 1, selectedButton == 0); // Take additional parameter of selectedButton == 0
 	drawBitmapText("New Game", x + 0.4,y - 0.6, 0, 255, selectedButton == 0 ? 0: 255, selectedButton == 0 ? 0 : 255);
@@ -253,10 +300,12 @@ void startScreen() {
 	y -= delta;
 	drawButton(x, y, 3, 1, selectedButton == 3);
 	drawBitmapText("Quit",x + 0.4,y - 0.6, 0, 255, selectedButton == 3 ? 0 : 255, selectedButton == 3 ? 0 : 255);
+	
+	drawBitmapText("Use up and down arrow keys to select an option.",-6,-6,10,0,255,255);
+	drawBitmapText("Use enter key to select the option.",-5,-7,10,0,255,255);
+	
 	drawSpaceShip();
-
 	glutTimerFunc(delay, startScreenTimer, 100);
-
 	glFlush();
 }
 
@@ -330,8 +379,8 @@ void keyboard(unsigned char ch, int x, int y) {
 				screen = 1;
 				break;
 			case 1:
-				//glutDisplayFunc(instructionScreen);
-				//screen = 2;
+				glutDisplayFunc(instructionScreen);
+				screen = 2;
 				break;
 			case 2:
 				//glutDisplayFunc(highScoreScreen);
@@ -386,6 +435,12 @@ void keyboard(unsigned char ch, int x, int y) {
 		}
 		glutPostRedisplay();
 		break;
+	case 2: //instructions screen
+		if (ch==27){
+			glutDisplayFunc(startScreen);
+			screen = 0;
+		}
+		break;
 	case 3: // Game over screen
 		break;
 	}
@@ -394,7 +449,7 @@ void keyboard(unsigned char ch, int x, int y) {
 //Controls: functionality for special function keys(direction keys) like up, down, left, right arrows
 void arrowKeyPress(int key, int x, int y) {
 	switch (screen) {
-	case 0:
+	case 0: //screen 0 is the start screen
 		switch (key) {
 		case GLUT_KEY_UP: selectedButton--;
 			if (selectedButton < 0)
@@ -404,7 +459,7 @@ void arrowKeyPress(int key, int x, int y) {
 		}
 		glutPostRedisplay();
 		break;
-	case 1:
+	case 1: //screen 1 is the game screen
 		switch (key) {
 		case GLUT_KEY_LEFT: cx += 1; break;
 		case GLUT_KEY_RIGHT: cx -= 1; break;
