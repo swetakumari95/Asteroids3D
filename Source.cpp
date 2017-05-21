@@ -178,7 +178,7 @@ void drawSpaceShip() {
 		glVertex3f(i + 0.4, -9, 10);
 		glEnd();
 	}
-	for (float i = 2.4; i<9.5; i += 0.8) {
+	for (float i = 2.7; i<9.5; i += 0.8) {
 		glColor3ub(rand() % 255, rand() % 255, rand() % 255);
 		glBegin(GL_QUADS);
 		glVertex3f(i, -9.8, 10);
@@ -207,39 +207,32 @@ void drawSpaceShip() {
 	glVertex3f(5, -8, 10);
 	glEnd();
 	//panels in the corner portion of spacecraft
-	glColor3f(0, 0, 0);
-	glBegin(GL_TRIANGLES);
-	glVertex3f(-9.8, -8, 10);
-	glVertex3f(-9.8, -5.5, 10);
-	glVertex3f(-5.5, -8, 10);
-	glEnd();
-	glBegin(GL_TRIANGLES);
-	glVertex3f(9.8, -8, 10);
-	glVertex3f(9.8, -5.5, 10);
-	glVertex3f(5.5, -8, 10);
-	glEnd();
-	//varying graph like lines
-	float xx = 3.8;
-	for (float y = -7.8; y<-5.5; y += 0.35) {
-		glColor3ub(rand() % 255, rand() % 255, rand() % 255);
-		glBegin(GL_LINES);
-		glVertex3f(-9.75, y, 10);
-		glVertex3f(-9.75 + xx, y, 10);
-		glEnd();
-		if (rand() % 3 == 1)
-			break;
-		xx -= 0.6;
+	
+	float dec=0;
+	for (float y=-8;y<-5.8;y+=0.6){
+		for (float x=-9.5;x<(-5.7-dec);x+=0.6){
+			glColor3ub(rand()%255, rand()%255, rand()%255);
+			glBegin(GL_QUADS);
+				glVertex3f(x,y,10);
+				glVertex3f(x,y+0.3,10);
+				glVertex3f(x+0.3,y+0.3,10);
+				glVertex3f(x+0.3,y,10);
+			glEnd();
+		} 
+		dec += 1.2;
 	}
-	xx = 3.8;
-	for (float y = -7.8; y<-5.5; y += 0.35) {
-		glColor3ub(rand() % 255, rand() % 255, rand() % 255);
-		glBegin(GL_LINES);
-		glVertex3f(9.75, y, 10);
-		glVertex3f(9.75 - xx, y, 10);
-		glEnd();
-		if (rand() % 3 == 1)
-			break;
-		xx -= 0.6;
+	dec=0;
+	for (float y=-8;y<-5.8;y+=0.6){
+		for (float x=9.5;x>(5.7+dec);x-=0.6){
+			glColor3ub(rand()%255, rand()%255, rand()%255);
+			glBegin(GL_QUADS);
+				glVertex3f(x,y,10);
+				glVertex3f(x,y+0.3,10);
+				glVertex3f(x-0.3,y+0.3,10);
+				glVertex3f(x-0.3,y,10);
+			glEnd();
+		} 
+		dec += 1.2;
 	}
 }
 
