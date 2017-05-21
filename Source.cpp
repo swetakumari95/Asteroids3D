@@ -16,12 +16,13 @@ int selectedButton = 0, screen = 0;
 
 //TODO: Random number of asteroids at the same time, random timing,  etc. 
 //TODO: gameplay should be smooth
-//TODO: game over, opening screen, menus, asteroid texture, healthbar?, enter to pause the game
+//TODO: game over, asteroid texture, healthbar?, enter to pause the game
 //TODO: work on laser, prevent continuous key press
 
 //done: Try different speeds for different asteroids, shooting controls, aim
 //done: aim still takes a square region for hit(make it circle), add special scores for hitting the asteroids
 //done: panel at the bottom of the screen
+//done: opening screen, menus
 
 
 /*void idle() {
@@ -246,6 +247,29 @@ void startScreenTimer(int n) {
 	glutPostRedisplay();
 }
 
+
+void highScoreScreen(){
+	glClearColor(0, 0, 0, 1);
+	glClear(GL_COLOR_BUFFER_BIT);
+	drawBackground();
+	
+	drawBitmapText("HIGH SCORE", -2, 8, 10, 0, 0, 255);
+	int hs[] = {22500, 14500, 12900, 9780, 9040, 8550, 5540, 2300, 1230, 500};
+	string hsnames[] = {"Amanda", "Johnny", "Walker", "Harvey", "Steven", "Ravena", "Banner", "Bolton", "Oliver", "Carlos"};
+	
+	float ypos = 6;
+	for (int i=0;i<10;i++){
+		drawBitmapText(hsnames[i], -4, ypos, 10, 0, 255, 255);
+		drawBitmapText(to_string(hs[i]), 2, ypos--, 10, 0, 255, 255);
+	}
+	
+	drawBitmapText("Press the ESC button to return to main menu.", -5.5, -7, 10, 255, 255, 255);  
+	
+	drawSpaceShip();
+	glutTimerFunc(delay, startScreenTimer, 100);
+	glFlush();
+}
+
 void instructionScreen() {
 	glClearColor(0, 0, 0, 1);
 	glClear(GL_COLOR_BUFFER_BIT);
@@ -285,6 +309,7 @@ void startScreen() {
 	glClearColor(0, 0, 0, 1);
 	glClear(GL_COLOR_BUFFER_BIT);
 	glColor3f(1, 1, 1);
+	drawBackground();
 	
 	drawBitmapTextLarge("ASTEROIDS 3D",-2.8,8,10,255,255,0);
 	
@@ -383,8 +408,8 @@ void keyboard(unsigned char ch, int x, int y) {
 				screen = 2;
 				break;
 			case 2:
-				//glutDisplayFunc(highScoreScreen);
-				//screen = 3;
+				glutDisplayFunc(highScoreScreen);
+				screen = 3;
 				break;
 			case 3:
 				exit(0);
@@ -441,7 +466,11 @@ void keyboard(unsigned char ch, int x, int y) {
 			screen = 0;
 		}
 		break;
-	case 3: // Game over screen
+	case 3: //High score screen
+		if (ch==27){
+			glutDisplayFunc(startScreen);
+			screen = 0;
+		}
 		break;
 	}
 }
