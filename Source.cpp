@@ -3,8 +3,9 @@
 #include <chrono>
 #include <ctime>
 #include <thread>
-#include <GL/glut.h>
 #include <string>
+#include <algorithm>
+#include <GL/glut.h>
 
 using namespace std;
 
@@ -12,7 +13,24 @@ float scale = 1, scalefactor = 0.2;    //scalefactor to generate different speed
 float cx = 0, cy = 0, r = 1, z = -10;
 int flag = 0;
 
+int numberOfHighScores = 0;
+
+string name;
+int namelength = 0;
+
+typedef struct {
+	int val;
+	string name;
+}scoretype;
+
+scoretype highscore[10];
+
 int selectedButton = 0, screen = 0;
+
+FILE* fp = NULL;
+
+
+//BUG: Speed of blinking and background etc increases once arrows are used. i.e., delay gets reduced in timer?
 
 //TODO: Random number of asteroids at the same time, random timing,  etc. 
 //TODO: gameplay should be smooth
@@ -41,13 +59,13 @@ time_t clk;
 void idle() {
 	time_t now = time(NULL);
 	if (difftime(now, clk) > 5) {
-		score += 10;
+		score += 25;
 		clk = now;
-		//cout<<score<<endl;
+		cout << score << endl;
 	}
 }
 
-void drawBitmapText(string str, float x, float y, float z,float r,float g,float b) {
+void drawBitmapText(string str, float x, float y, float z, float r, float g, float b) {
 	glColor3ub((int)r, (int)g, (int)b);
 	glRasterPos3f(x, y, z);
 	for (int i = 0; i<str.length(); i++) {
@@ -56,7 +74,7 @@ void drawBitmapText(string str, float x, float y, float z,float r,float g,float 
 	glColor3f(1, 1, 1);
 }
 
-void drawBitmapTextLarge(string str, float x, float y, float z,float r,float g,float b) {
+void drawBitmapTextLarge(string str, float x, float y, float z, float r, float g, float b) {
 	glColor3ub((int)r, (int)g, (int)b);
 	glRasterPos3f(x, y, z);
 	for (int i = 0; i<str.length(); i++) {
@@ -97,9 +115,11 @@ void timer(int val) {
 	else
 		scale += 0.25;
 	z--;
-	glutPostRedisplay();
+
 	if (z > -10)
 		glutTimerFunc(delay, timer, 100);
+
+	glutPostRedisplay();
 }
 
 void drawBackground() {
@@ -207,59 +227,76 @@ void drawSpaceShip() {
 	glVertex3f(5, -8, 10);
 	glEnd();
 	//panels in the corner portion of spacecraft
-	
-	float dec=0;
-	for (float y=-8;y<-5.8;y+=0.6){
-		for (float x=-9.5;x<(-5.7-dec);x+=0.6){
-			glColor3ub(rand()%255, rand()%255, rand()%255);
+
+	float dec = 0;
+	for (float y = -8; y<-5.8; y += 0.6) {
+		for (float x = -9.5; x<(-5.7 - dec); x += 0.6) {
+			glColor3ub(rand() % 255, rand() % 255, rand() % 255);
 			glBegin(GL_QUADS);
-				glVertex3f(x,y,10);
-				glVertex3f(x,y+0.3,10);
-				glVertex3f(x+0.3,y+0.3,10);
-				glVertex3f(x+0.3,y,10);
+			glVertex3f(x, y, 10);
+			glVertex3f(x, y + 0.3, 10);
+			glVertex3f(x + 0.3, y + 0.3, 10);
+			glVertex3f(x + 0.3, y, 10);
 			glEnd();
-		} 
+		}
 		dec += 1.2;
 	}
-	dec=0;
-	for (float y=-8;y<-5.8;y+=0.6){
-		for (float x=9.5;x>(5.7+dec);x-=0.6){
-			glColor3ub(rand()%255, rand()%255, rand()%255);
+	dec = 0;
+	for (float y = -8; y<-5.8; y += 0.6) {
+		for (float x = 9.5; x>(5.7 + dec); x -= 0.6) {
+			glColor3ub(rand() % 255, rand() % 255, rand() % 255);
 			glBegin(GL_QUADS);
-				glVertex3f(x,y,10);
-				glVertex3f(x,y+0.3,10);
-				glVertex3f(x-0.3,y+0.3,10);
-				glVertex3f(x-0.3,y,10);
+			glVertex3f(x, y, 10);
+			glVertex3f(x, y + 0.3, 10);
+			glVertex3f(x - 0.3, y + 0.3, 10);
+			glVertex3f(x - 0.3, y, 10);
 			glEnd();
-		} 
+		}
 		dec += 1.2;
 	}
 }
 
-void startScreenTimer(int n) {
+void timer2(int n) {
 	glutPostRedisplay();
 }
 
-
-void highScoreScreen(){
+void saveHighScoreScreen() {
 	glClearColor(0, 0, 0, 1);
 	glClear(GL_COLOR_BUFFER_BIT);
 	drawBackground();
-	
-	drawBitmapText("HIGH SCORE", -2, 8, 10, 0, 0, 255);
-	int hs[] = {22500, 14500, 12900, 9780, 9040, 8550, 5540, 2300, 1230, 500};
-	string hsnames[] = {"Amanda", "Johnny", "Walker", "Harvey", "Steven", "Ravena", "Banner", "Bolton", "Oliver", "Carlos"};
-	
-	float ypos = 6;
-	for (int i=0;i<10;i++){
-		drawBitmapText(hsnames[i], -4, ypos, 10, 0, 255, 255);
-		drawBitmapText(to_string(hs[i]), 2, ypos--, 10, 0, 255, 255);
-	}
-	
-	drawBitmapText("Press the ESC button to return to main menu.", -5.5, -7, 10, 255, 255, 255);  
-	
+
+	drawBitmapText("CONGRATULATIONS!", -2.8, 8, 10, 255, 255, 0);
+
+	drawBitmapText("Enter your name : ", -2.8, 4, 10, 255, 255, 0);
+	drawBitmapText(name, 1.5, 4, 10, 255, 255, 0);
+
 	drawSpaceShip();
-	glutTimerFunc(delay, startScreenTimer, 100);
+	glutTimerFunc(delay, timer2, 100);
+	glFlush();
+}
+
+void highScoreScreen() {
+	glClearColor(0, 0, 0, 1);
+	glClear(GL_COLOR_BUFFER_BIT);
+	drawBackground();
+
+	drawBitmapText("HIGH SCORE", -2, 8, 10, 0, 0, 255);
+
+	float ypos = 6;
+	for (int i = 0; i < numberOfHighScores; i++) {
+		drawBitmapText(highscore[i].name, -4, ypos, 10, 0, 255, 255);
+		drawBitmapText(to_string(highscore[i].val), 2, ypos--, 10, 0, 255, 255);
+	}
+
+	for (int i = numberOfHighScores; i < 10; i++) {
+		drawBitmapText("-----", -4, ypos, 10, 0, 255, 255);
+		drawBitmapText("-----", 2, ypos--, 10, 0, 255, 255);
+	}
+
+	drawBitmapText("Press the ESC button to return to main menu.", -5.5, -7, 10, 255, 255, 255);
+
+	drawSpaceShip();
+	glutTimerFunc(delay, timer2, 100);
 	glFlush();
 }
 
@@ -268,13 +305,13 @@ void instructionScreen() {
 	glClear(GL_COLOR_BUFFER_BIT);
 	drawBackground();
 
-	string str[] = {"You are in space, and you command a spacecraft.", "Accidentally you were pushed into the asteroid belt.", "Your aim is to shoot or dodge the asteroids.", "Use up(w), down(s), left(a) or right(d) buttons to move your spacecraft.", "Use the spacebar to shoot the asteroids.", "You are awarded extra points for shooting the asteroids.", "The game is over when an asteroid strikes the spacecraft", "Have fun!"};
+	string str[] = { "You are in space, and you command a spacecraft.", "Accidentally you were pushed into the asteroid belt.", "Your aim is to shoot or dodge the asteroids.", "Use up(w), down(s), left(a) or right(d) buttons to move your spacecraft.", "Use the spacebar to shoot the asteroids.", "You are awarded extra points for shooting the asteroids.", "The game is over when an asteroid strikes the spacecraft.", "Have fun!" };
 
 	drawBitmapText("INSTRUCTIONS", -2, 8, 10, 0, 0, 255);
-	float ypos=6;
-	for (int i=0;i<(sizeof(str)/sizeof(*str));i++){
+	float ypos = 6;
+	for (int i = 0; i<(sizeof(str) / sizeof(*str)); i++) {
 		float xpos;
-		int l = str[i].length(); 
+		int l = str[i].length();
 		if (l>60) xpos = -8;
 		else if (l>55) xpos = -7.5;
 		else if (l>50) xpos = -7;
@@ -290,11 +327,11 @@ void instructionScreen() {
 		drawBitmapText(str[i], xpos, ypos, 10, 0, 255, 255);
 		ypos -= 1.5;
 	}
-	
+
 	drawBitmapText("Press the ESC button to return to main menu.", -5.5, -7, 10, 255, 255, 255);
-	
+
 	drawSpaceShip();
-	glutTimerFunc(delay, startScreenTimer, 100);
+	glutTimerFunc(delay, timer2, 100);
 	glFlush();
 }
 
@@ -303,27 +340,53 @@ void startScreen() {
 	glClear(GL_COLOR_BUFFER_BIT);
 	glColor3f(1, 1, 1);
 	drawBackground();
-	
-	drawBitmapTextLarge("ASTEROIDS 3D",-2.8,8,10,255,255,0);
-	
+
+	drawBitmapTextLarge("ASTEROIDS 3D", -2.8, 8, 10, 255, 255, 0);
+
 	float x = -2, y = 6, delta = 2;
 	drawButton(x, y, 3, 1, selectedButton == 0); // Take additional parameter of selectedButton == 0
-	drawBitmapText("New Game", x + 0.4,y - 0.6, 0, 255, selectedButton == 0 ? 0: 255, selectedButton == 0 ? 0 : 255);
+	drawBitmapText("New Game", x + 0.4, y - 0.6, 0, 255, selectedButton == 0 ? 0 : 255, selectedButton == 0 ? 0 : 255);
 	y -= delta;
 	drawButton(x, y, 3, 1, selectedButton == 1);
-	drawBitmapText("Instructions",x + 0.4,y - 0.6, 0, 255, selectedButton == 1 ? 0 : 255, selectedButton == 1 ? 0 : 255);
+	drawBitmapText("Instructions", x + 0.4, y - 0.6, 0, 255, selectedButton == 1 ? 0 : 255, selectedButton == 1 ? 0 : 255);
 	y -= delta;
 	drawButton(x, y, 3, 1, selectedButton == 2);
-	drawBitmapText("High Score",x + 0.4,y - 0.6, 0, 255, selectedButton == 2 ? 0 : 255, selectedButton == 2 ? 0 : 255);
+	drawBitmapText("High Score", x + 0.4, y - 0.6, 0, 255, selectedButton == 2 ? 0 : 255, selectedButton == 2 ? 0 : 255);
 	y -= delta;
 	drawButton(x, y, 3, 1, selectedButton == 3);
-	drawBitmapText("Quit",x + 0.4,y - 0.6, 0, 255, selectedButton == 3 ? 0 : 255, selectedButton == 3 ? 0 : 255);
-	
-	drawBitmapText("Use up and down arrow keys to select an option.",-6,-6,10,0,255,255);
-	drawBitmapText("Use enter key to select the option.",-5,-7,10,0,255,255);
-	
+	drawBitmapText("Quit", x + 0.4, y - 0.6, 0, 255, selectedButton == 3 ? 0 : 255, selectedButton == 3 ? 0 : 255);
+
+	drawBitmapText("Use up and down arrow keys to select an option.", -6, -6, 10, 0, 255, 255);
+	drawBitmapText("Use enter key to select the option.", -5, -7, 10, 0, 255, 255);
+
 	drawSpaceShip();
-	glutTimerFunc(delay, startScreenTimer, 100);
+	glutTimerFunc(delay, timer2, 100);
+	glFlush();
+}
+
+void gameOverScreen() {
+	glClearColor(0, 0, 0, 1);
+	glClear(GL_COLOR_BUFFER_BIT);
+	glColor3f(1, 1, 1);
+	drawBackground();
+
+	drawBitmapTextLarge("GAME OVER", -2.8, 8, 10, 255, 255, 0);
+
+	float x = -2, y = 6, delta = 2;
+	drawButton(x, y, 3, 1, selectedButton == 0); // 5th parameter is for highlighting.
+	drawBitmapText("Replay", x + 0.4, y - 0.6, 0, 255, selectedButton == 0 ? 0 : 255, selectedButton == 0 ? 0 : 255);
+	y -= delta;
+	drawButton(x, y, 3, 1, selectedButton == 1);
+	drawBitmapText("Main Menu", x + 0.4, y - 0.6, 0, 255, selectedButton == 1 ? 0 : 255, selectedButton == 1 ? 0 : 255);
+	y -= delta;
+	drawButton(x, y, 3, 1, selectedButton == 2);
+	drawBitmapText("Quit", x + 0.4, y - 0.6, 0, 255, selectedButton == 2 ? 0 : 255, selectedButton == 2 ? 0 : 255);
+
+	drawBitmapText("Use up and down arrow keys to select an option.", -6, -6, 10, 0, 255, 255);
+	drawBitmapText("Use enter key to select the option.", -5, -7, 10, 0, 255, 255);
+
+	drawSpaceShip();
+	glutTimerFunc(delay, timer2, 100);
 	glFlush();
 }
 
@@ -334,7 +397,7 @@ void display() {
 	drawBackground();
 
 	//Displaying the circle
-	glPointSize(5);
+	//glPointSize(5);
 	for (float i = 0; i < 180; i += 0.01) {
 		float x1 = cx + scale*r*cos(i*3.14);
 		float y1 = cy + scale*r*sin(i*3.14);
@@ -348,10 +411,22 @@ void display() {
 	}
 
 	if (z <= -10) {
+		// Game over condition - Asteroid hits spaceship
 		if (cx < 10 && cx > -10 && cy < 10 && cy > -10 && flag) {
-			glClearColor(1, 1, 1, 1);
-			glClear(GL_COLOR_BUFFER_BIT);
-
+			glutIdleFunc(NULL);
+			if (numberOfHighScores < 10 || score > highscore[numberOfHighScores - 1].val) {
+				namelength = 0;
+				name[0] = '\0';
+				screen = 5;
+				glutDisplayFunc(saveHighScoreScreen);
+				glutTimerFunc(delay, timer2, 100);
+			}
+			else {
+				screen = 4;
+				glutDisplayFunc(gameOverScreen);
+				glutTimerFunc(delay, timer2, 100);
+			}
+			//glutPostRedisplay();
 		}
 		else {
 			flag = 1;
@@ -385,6 +460,10 @@ void display() {
 	glFlush();
 }
 
+bool compare(scoretype a, scoretype b) {
+	return a.val > b.val;
+}
+
 //Controls: functionality for normal keys like a,w,s,d
 void keyboard(unsigned char ch, int x, int y) {
 	//Figure out how to avoid the lag with key press and hold
@@ -393,6 +472,7 @@ void keyboard(unsigned char ch, int x, int y) {
 		if (ch == 13) {
 			switch (selectedButton) {
 			case 0:
+				glutIdleFunc(idle);
 				glutDisplayFunc(display);
 				screen = 1;
 				break;
@@ -417,7 +497,7 @@ void keyboard(unsigned char ch, int x, int y) {
 		case 's': cy += 1; break;
 		case 32:
 			//laser shoots to the center of the screen
-			glPointSize(5);
+			glLineWidth(2);
 			glBegin(GL_LINES);
 			glColor3f(0, 1, 0);
 			glVertex3f(-10, -5, 0);
@@ -439,7 +519,8 @@ void keyboard(unsigned char ch, int x, int y) {
 			glVertex3f(0, 0, 0);
 			glEnd();
 			glFlush();
-			//glLineWidth(1);
+			//glPointSize(1);
+			glLineWidth(1);
 
 			//when the laser hits the asteroid
 			//double theta = atan(cy/cx);
@@ -451,20 +532,76 @@ void keyboard(unsigned char ch, int x, int y) {
 				score += 50;
 			}
 		}
-		glutPostRedisplay();
+		//glutPostRedisplay();
 		break;
 	case 2: //instructions screen
-		if (ch==27){
+		if (ch == 27) {
 			glutDisplayFunc(startScreen);
 			screen = 0;
 		}
 		break;
 	case 3: //High score screen
-		if (ch==27){
+		if (ch == 27) {
 			glutDisplayFunc(startScreen);
 			screen = 0;
 		}
 		break;
+	case 4: //Game over screen
+		if (ch == 13) {
+			switch (selectedButton) {
+			case 0:
+				glutIdleFunc(idle);
+				scale = 1, scalefactor = 0.2;
+				cx = 0, cy = 0, r = 1, z = -10;
+				flag = 0;
+				selectedButton = 0, screen = 1;
+				score = 0;
+				glutDisplayFunc(display);
+				//glutPostRedisplay();
+				break;
+			case 1:
+				glutDisplayFunc(startScreen);
+				scale = 1, scalefactor = 0.2;
+				cx = 0, cy = 0, r = 1, z = -10;
+				flag = 0;
+				selectedButton = 0, screen = 0;
+				score = 0;
+				//glutPostRedisplay();
+				break;
+			case 2:
+				//write highscores back to file
+				exit(0);
+			}
+		}
+		break;
+	case 5: //Enter name for high score screen
+		if (isalpha(ch)) {
+			if (namelength < 10) {
+				name += ch;
+				namelength++;
+			}
+		}
+		else if (ch == 13) {
+			if (namelength != 0) {
+				if (numberOfHighScores < 10) {
+					highscore[numberOfHighScores].name = name;
+					highscore[numberOfHighScores++].val = score;
+				}
+				else {
+					highscore[numberOfHighScores - 1].name = name;
+					highscore[numberOfHighScores - 1].val = score;
+				}
+				sort(highscore, highscore + numberOfHighScores, compare);
+				fp = fopen("highscore.txt", "w");
+				fprintf(fp, "%d ", numberOfHighScores);
+				for (int i = 0; i < numberOfHighScores; i++)
+					fprintf(fp, "%s %d", highscore[i].name, highscore[i].val);
+				glutDisplayFunc(gameOverScreen);
+				screen = 4;
+				name = "";
+				namelength = 0;
+			}
+		}
 	}
 }
 
@@ -479,7 +616,7 @@ void arrowKeyPress(int key, int x, int y) {
 			break;
 		case GLUT_KEY_DOWN: selectedButton = (selectedButton + 1) % 4; break;
 		}
-		glutPostRedisplay();
+		//glutPostRedisplay();
 		break;
 	case 1: //screen 1 is the game screen
 		switch (key) {
@@ -488,7 +625,17 @@ void arrowKeyPress(int key, int x, int y) {
 		case GLUT_KEY_UP: cy -= 1; break;
 		case GLUT_KEY_DOWN: cy += 1; break;
 		}
-		glutPostRedisplay();
+		//glutPostRedisplay();
+		break;
+	case 4:
+		switch (key) {
+		case GLUT_KEY_UP: selectedButton--;
+			if (selectedButton < 0)
+				selectedButton = 2;
+			break;
+		case GLUT_KEY_DOWN: selectedButton = (selectedButton + 1) % 3; break;
+		}
+		//glutPostRedisplay();
 		break;
 	}
 }
@@ -506,6 +653,17 @@ int main(int argc, char *argv[]) {
 	glutInitWindowSize(700, 600); //Choose a good window size. Maybe use screen size - Full screen stuff?
 	glutCreateWindow("Asteroids!");
 	init();
+	fp = fopen("highscore.txt", "r");
+	if (!fp) {
+		fp = fopen("highscore.txt", "w+");
+		fprintf(fp, "%d", 0);
+	}
+	fscanf(fp, "%d", &numberOfHighScores);
+	for (int i = 0; i < 10; i++)
+		highscore[i].val = -1;
+	for (int i = 0; i < numberOfHighScores; i++)
+		fscanf(fp, "%s%d", highscore[i].name, &highscore[i].val);
+	fclose(fp);
 	clk = time(NULL);
 	glutDisplayFunc(startScreen);
 	glutKeyboardFunc(keyboard);
