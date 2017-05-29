@@ -416,7 +416,7 @@ void display() {
 			glutIdleFunc(NULL);
 			if (numberOfHighScores < 10 || score > highscore[numberOfHighScores - 1].val) {
 				namelength = 0;
-				name[0] = '\0';
+				name = "";
 				screen = 5;
 				glutDisplayFunc(saveHighScoreScreen);
 				glutTimerFunc(delay, timer2, 100);
@@ -594,7 +594,7 @@ void keyboard(unsigned char ch, int x, int y) {
 				sort(highscore, highscore + numberOfHighScores, compare);
 				fp = fopen("highscore.txt", "w");
 				fprintf(fp, "%d ", numberOfHighScores);
-				for (int i = 0; i < numberOfHighScores; i++){
+				for (int i = 0; i < numberOfHighScores; i++) {
 					char *cname = &(highscore[i].name[0]);
 					fprintf(fp, "%s %d ", cname, highscore[i].val);
 				}
@@ -663,9 +663,11 @@ int main(int argc, char *argv[]) {
 	fscanf(fp, "%d", &numberOfHighScores);
 	for (int i = 0; i < 10; i++)
 		highscore[i].val = -1;
-	for (int i = 0; i < numberOfHighScores; i++){
-		char *cname = &(highscore[i].name[0]);
-		fscanf(fp, "%s %d ", cname, &highscore[i].val);
+	for (int i = 0; i < numberOfHighScores; i++) {
+		char cname[11];
+		fscanf(fp, "%s%d ", cname, &highscore[i].val);
+		highscore[i].name = cname;
+		printf("\n%s%d", cname, highscore[i].val);
 	}
 	fclose(fp);
 	clk = time(NULL);
