@@ -594,8 +594,10 @@ void keyboard(unsigned char ch, int x, int y) {
 				sort(highscore, highscore + numberOfHighScores, compare);
 				fp = fopen("highscore.txt", "w");
 				fprintf(fp, "%d ", numberOfHighScores);
-				for (int i = 0; i < numberOfHighScores; i++)
-					fprintf(fp, "%s %d", highscore[i].name, highscore[i].val);
+				for (int i = 0; i < numberOfHighScores; i++){
+					char *cname = &(highscore[i].name[0]);
+					fprintf(fp, "%s %d ", cname, highscore[i].val);
+				}
 				glutDisplayFunc(gameOverScreen);
 				screen = 4;
 				name = "";
@@ -656,13 +658,15 @@ int main(int argc, char *argv[]) {
 	fp = fopen("highscore.txt", "r");
 	if (!fp) {
 		fp = fopen("highscore.txt", "w+");
-		fprintf(fp, "%d", 0);
+		fprintf(fp, "%d ", 0);
 	}
 	fscanf(fp, "%d", &numberOfHighScores);
 	for (int i = 0; i < 10; i++)
 		highscore[i].val = -1;
-	for (int i = 0; i < numberOfHighScores; i++)
-		fscanf(fp, "%s%d", highscore[i].name, &highscore[i].val);
+	for (int i = 0; i < numberOfHighScores; i++){
+		char *cname = &(highscore[i].name[0]);
+		fscanf(fp, "%s %d ", cname, &highscore[i].val);
+	}
 	fclose(fp);
 	clk = time(NULL);
 	glutDisplayFunc(startScreen);
