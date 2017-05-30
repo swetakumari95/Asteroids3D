@@ -270,7 +270,9 @@ void saveHighScoreScreen() {
 	drawBitmapText(name, 0.6, 3, 10, 255, 255, 0);
 	drawBitmapText("......................", 0.4, 2.7, 10, 255, 255, 0);
 
-	drawBitmapText("Use letter keys to enter your name.", -4, -6, 10, 255, 255, 255);
+	drawBitmapText("Use letter keys to enter your name.", -4, -4, 10, 255, 255, 255);
+	drawBitmapText("It can be a maximum of 10 characters in length.", -5.5, -5, 10, 255, 255, 255);
+	drawBitmapText("Only letters are allowed, no backspace.", -4.5, -6, 10, 255, 255, 255);
 	drawBitmapText("Hit enter when you are done.", -3.4, -7, 10, 255, 255, 255);
 	drawSpaceShip();
 	glutTimerFunc(delay, timer2, 100);
